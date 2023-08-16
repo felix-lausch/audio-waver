@@ -5,11 +5,12 @@ import SceneInit from "./lib/SceneInit";
 export default function Graph() {
   let sceneManager;
   let audioContext, audioElement, dataArray, analyser, source, bufferLength;
-  let bars;
+  let bars = [];
 
   useEffect(() => {
     sceneManager = new SceneInit("threejscanvas");
     sceneManager.initScene();
+    sceneManager.camera.position.z = 200
     sceneManager.animate();
   }, []);
 
@@ -63,8 +64,6 @@ export default function Graph() {
       color: "orange",
       side: THREE.DoubleSide,
     });
-
-    bars = []
 
     for (let i = 0; i < bufferLength; i++) {
       const bar = new THREE.Mesh(geometry, material);

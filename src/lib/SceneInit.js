@@ -20,7 +20,6 @@ export default class SceneInit {
       1,
       1000
     );
-    this.camera.position.z = 196;
 
     this.clock = new THREE.Clock();
     this.scene = new THREE.Scene();
@@ -68,7 +67,7 @@ export default class SceneInit {
     window.requestAnimationFrame(this.animate.bind(this));
     this.render();
     this.stats.update();
-    this.controls.update();
+    // this.controls.update();
   }
 
   render() {

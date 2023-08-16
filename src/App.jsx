@@ -9,6 +9,7 @@ function App() {
   useEffect(() => {
     test = new SceneInit("threejscanvas")
     test.initScene()
+    test.camera.position.z = 200
     test.animate()
   }, [])
 
