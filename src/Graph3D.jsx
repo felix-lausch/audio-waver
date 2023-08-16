@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import * as THREE from "three";
 import SceneInit from "./lib/SceneInit";
 
-export default function Graph() {
+export default function Graph3D() {
   let sceneManager;
   let audioContext, audioElement, dataArray, analyser, source, bufferLength;
   let bars;
@@ -10,7 +10,7 @@ export default function Graph() {
   useEffect(() => {
     sceneManager = new SceneInit("threejscanvas");
     sceneManager.initScene();
-    sceneManager.camera.position.z = 200
+    sceneManager.camera.position.z = 190
     sceneManager.animate();
   }, []);
 
@@ -20,16 +20,18 @@ export default function Graph() {
     }
 
     if (!bars) {
-      setupBars();
+      createBars();
     }
 
     const render = (time) => {
       // analyser.getByteTimeDomainData(dataArray);
       analyser.getByteFrequencyData(dataArray);
 
+      // console.log(dataArray)
+
       for (let i = 0; i < bufferLength; i++) {
-        const y = (dataArray[i] / 128.0) * 200;
         const bar = bars[i];
+        const y = (dataArray[i] / 128.0) * 200;
         bar.scale.y = y;
       }
 
@@ -56,7 +58,7 @@ export default function Graph() {
     </div>
   );
 
-  function setupBars() {
+  function createBars() {
     const geometry = new THREE.PlaneGeometry(1, 4);
     const material = new THREE.MeshBasicMaterial({
       color: "orange",
@@ -67,6 +69,7 @@ export default function Graph() {
 
     for (let i = 0; i < bufferLength; i++) {
       const bar = new THREE.Mesh(geometry, material);
+      
       bar.position.x = i * 3;
       bar.position.y = -100;
       bar.position.z = -100;
