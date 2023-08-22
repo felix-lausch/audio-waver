@@ -20,31 +20,52 @@ function Flying() {
     if (!audioContext) {
       setupAudioContext();
     }
+    
+    const uniforms = {
+      u_time: {
+        type: "f",
+        value: 1.0,
+      },
+      u_amplitude: {
+        type: "f",
+        value: 2.0,
+      },
+      u_data_arr: {
+        type: "float[64]",
+        value: dataArray,
+      },
+    };
 
     const planeGeo = new THREE.PlaneGeometry(64, 64, 64, 64);
     // const planeMat = new THREE.MeshNormalMaterial({ wireframe: true })
     const planeMat = new THREE.ShaderMaterial({
-      // uniforms: uniforms, //dataArray, time
+      uniforms: uniforms, //dataArray, time
       vertexShader: `
         varying float x;
         varying float y;
         varying float z;
-
+        varying vec3 vUv;
+        
         uniform float u_time;
         uniform float[64] u_data_arr;
-
+        
         void main() {
-          // float z = sin(abs(position.x) + abs(position.y) + u_time * .003);
-          float idk = position.x - (2.0 * floor(position.x / 2.0));
-          
-          if (idk == 0.0){
-            float z = 1.0;
-          }
-          else {
-            float z = 0.0
-          }
+          vUv = position;
 
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
+          x = abs(position.x);
+          y = abs(position.y);
+          z = abs(position.z);
+      
+          float floor_x = round(x);
+          float floor_y = round(y);
+          float floor_z = round(z);
+
+          float test = u_data_arr[int(floor_x)] * .01;
+
+          // float z =  sin(position.x + u_time * 0.003) * .3;
+          // float z =  sin((position.y * 1.0) + position.x + u_time * .003) * .3;
+
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, test, 1.0);
         }
       `,
       // fragmentShader: fragmentShader,
@@ -63,7 +84,9 @@ function Flying() {
 
     const render = (time) => {
       requestAnimationFrame(render);
-      planeMesh.position.z += 0.09;
+      // planeMesh.position.z += 0.09;
+      uniforms.u_time.value = time
+      uniforms.u_data_arr.value = dataArray
     };
 
     render();
