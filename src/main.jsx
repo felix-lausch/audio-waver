@@ -8,9 +8,9 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* <App /> */}
+    <App />
     {/* <Graph /> */}
-    <Graph3D />
+    {/* <Graph3D /> */}
     {/* <Flying /> */}
   </React.StrictMode>,
 )

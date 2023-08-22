@@ -20,20 +20,8 @@ const vertexShader = `
     float x_multiplier = (32.0 - x) / 8.0;
     float y_multiplier = (32.0 - y) / 8.0;
 
-    // z = sin(u_data_arr[int(floor_x)] / 50.0 + u_data_arr[int(floor_y)] / 50.0) * u_data_arr[int(floor_x)] / 50.0 * u_data_arr[int(floor_y)] / 50.0;
-    // z = sin(u_data_arr[int(floor_x)] / 50.0 + u_data_arr[int(floor_y)] / 50.0);
     z = sin(u_data_arr[int(floor_x)] / 50.0 + u_data_arr[int(floor_y)] / 50.0) * u_amplitude;
-
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
-
-    // z = position.z;
-    // z = abs(position.x) + abs(position.y);
-    // z = sin(abs(position.x) + abs(position.y));
-    // z = sin(abs(position.x) + abs(position.y) + u_time * .005);
-    // z = sin(u_data_arr[int(floor_x)] / 50.0 + u_data_arr[int(floor_y)] / 50.0) * u_amplitude;
-    // z = (u_data_arr[int(floor_x)] / 50.0 + u_data_arr[int(floor_y)] / 50.0) * 2.0;
-
-    // gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
   }`;
 
 const fragmentShader = () => {
