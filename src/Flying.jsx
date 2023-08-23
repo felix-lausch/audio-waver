@@ -28,10 +28,10 @@ function Flying() {
       },
       u_amplitude: {
         type: "f",
-        value: 2.0,
+        value: 0.03,
       },
       u_data_arr: {
-        type: "float[64]",
+        type: "float[128]",
         value: dataArray,
       },
     };
@@ -47,7 +47,8 @@ function Flying() {
         varying vec3 vUv;
         
         uniform float u_time;
-        uniform float[64] u_data_arr;
+        uniform float[128] u_data_arr;
+        uniform float u_amplitude;
         
         void main() {
           vUv = position;
@@ -56,19 +57,33 @@ function Flying() {
           y = abs(position.y);
           z = abs(position.z);
       
-          float floor_x = round(x);
-          float floor_y = round(y);
-          float floor_z = round(z);
+          float shifted_x = x + 64.0;
+          float shifted_y = y + 64.0;
+          float shifted_z = z + 64.0;
 
-          float test = u_data_arr[int(floor_x)] * .01;
+          float amplitude_at_x = u_data_arr[int(shifted_x)];
+          float amplitude_at_y = u_data_arr[int(shifted_y)];
+
+          float z = ((amplitude_at_x - 127.0) + (amplitude_at_y - 127.0)) * u_amplitude;
 
           // float z =  sin(position.x + u_time * 0.003) * .3;
           // float z =  sin((position.y * 1.0) + position.x + u_time * .003) * .3;
 
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, test, 1.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
         }
       `,
-      // fragmentShader: fragmentShader,
+      fragmentShader: `
+      varying float x;
+      varying float y;
+      varying float z;
+      varying vec3 vUv;
+  
+      uniform float u_time;
+  
+      void main() {
+        gl_FragColor = vec4((32.0 - abs(x)) / 32.0, (32.0 - abs(y)) / 32.0, (abs(x + y) / 2.0) / 32.0, 1.0);
+      }
+    `,
       wireframe: true,
     });
     const planeMesh = new THREE.Mesh(planeGeo, planeMat);
@@ -85,6 +100,9 @@ function Flying() {
     const render = (time) => {
       requestAnimationFrame(render);
       // planeMesh.position.z += 0.09;
+
+      analyser.getByteFrequencyData(dataArray)
+
       uniforms.u_time.value = time
       uniforms.u_data_arr.value = dataArray
     };
@@ -112,7 +130,15 @@ function Flying() {
   function setupAudioContext() {
     audioContext = new window.AudioContext();
     audioElement = document.getElementById("audioPlayer");
-    audioElement.volume = 0.0;
+    source = audioContext.createMediaElementSource(audioElement)
+    analyser = audioContext.createAnalyser()
+    source.connect(analyser)
+    analyser.connect(audioContext.destination)
+    analyser.fftSize = 256
+    dataArray = new Uint8Array(analyser.frequencyBinCount)
+    
+    audioElement.volume = 0.2
+    console.log("FrequencyBinCount: " + analyser.frequencyBinCount)
   }
 }
 
