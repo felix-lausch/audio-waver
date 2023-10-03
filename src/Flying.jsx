@@ -57,9 +57,13 @@ function Flying() {
           y = abs(position.y);
           z = abs(position.z);
       
-          float shifted_x = x + 64.0;
-          float shifted_y = y + 64.0;
-          float shifted_z = z + 64.0;
+          // float shifted_x = x + 64.0;
+          // float shifted_y = y + 64.0;
+          // float shifted_z = z + 64.0;
+      
+          float shifted_x = x + 0.0;
+          float shifted_y = y + 0.0;
+          float shifted_z = z + 0.0;
 
           float amplitude_at_x = u_data_arr[int(shifted_x)];
           float amplitude_at_y = u_data_arr[int(shifted_y)];
@@ -67,23 +71,23 @@ function Flying() {
           float z = ((amplitude_at_x - 127.0) + (amplitude_at_y - 127.0)) * u_amplitude;
 
           // float z =  sin(position.x + u_time * 0.003) * .3;
-          // float z =  sin((position.y * 1.0) + position.x + u_time * .003) * .3;
+          // float z =  sin((position.y * 0.50) + position.x + u_time * .003) * .3;
 
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
         }
       `,
-      fragmentShader: `
-      varying float x;
-      varying float y;
-      varying float z;
-      varying vec3 vUv;
+    //   fragmentShader: `
+    //   varying float x;
+    //   varying float y;
+    //   varying float z;
+    //   varying vec3 vUv;
   
-      uniform float u_time;
+    //   uniform float u_time;
   
-      void main() {
-        gl_FragColor = vec4((32.0 - abs(x)) / 32.0, (32.0 - abs(y)) / 32.0, (abs(x + y) / 2.0) / 32.0, 1.0);
-      }
-    `,
+    //   void main() {
+    //     gl_FragColor = vec4((32.0 - abs(x)) / 32.0, (32.0 - abs(y)) / 32.0, (abs(x + y) / 2.0) / 32.0, 1.0);
+    //   }
+    // `,
       wireframe: true,
     });
     const planeMesh = new THREE.Mesh(planeGeo, planeMat);
