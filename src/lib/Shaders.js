@@ -33,7 +33,7 @@ export const hypnoticVertexShader = `
   uniform float[64] u_data_arr;
 
   void main() {
-    float z = sin(abs(position.x) + abs(position.y) + u_time * .003);
+    float z = sin(abs(position.x) * 0.1 + abs(position.y) * 0.1 + u_time * .002);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
   }`;
 

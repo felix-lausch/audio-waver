@@ -9,7 +9,9 @@ function App() {
   useEffect(() => {
     test = new SceneInit("threejscanvas")
     test.initScene()
-    test.camera.position.z = 200
+    test.camera.position.z = 900
+    test.camera.position.x = 64
+    test.camera.position.y = 64
     test.animate()
   }, [])
 
@@ -89,11 +91,9 @@ function App() {
     planeMesh4.position.x = 128
     planeMesh4.position.y = 128
 
-    // planeMesh.position.z = 33
-    // planeMesh.rotation.x = -Math.PI / 2 + Math.PI / 4
-    // planeMesh.scale.x = 2
-    // planeMesh.scale.y = 2
-    // planeMesh.scale.z = 2
+    planeMesh.scale.x = 2
+    planeMesh.scale.y = 2
+    planeMesh.scale.z = 2
 
     planeMesh2.scale.x = 2
     planeMesh2.scale.y = 2
@@ -144,6 +144,7 @@ function App() {
     audioContext = new window.AudioContext()
     audioElement = document.getElementById("audioPlayer")
     audioElement.volume = 0.2
+    audioElement.currentTime = 200
     source = audioContext.createMediaElementSource(audioElement)
     analyser = audioContext.createAnalyser()
     source.connect(analyser)
