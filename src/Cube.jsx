@@ -9,7 +9,7 @@ import pulsatingFragmentShader from './lib/pulsating.frag?raw';
 
 function App() {
   const canvasId = "threejscanvas"
-  let scene, audioContext, audioElement, dataArray, analyser, source, mesh;
+  let scene, audioContext, audioElement, frequencies = [], analyser, source, mesh;
   let animationId = null;
   let isPlaying = false;
 
@@ -24,7 +24,7 @@ function App() {
     },
     u_data_arr: {
       type: "float[64]",
-      value: dataArray,
+      value: frequencies,
     },
   };
 
@@ -39,6 +39,7 @@ function App() {
     scene = sceneInit.scene
   }, [])
 
+  const [band, setBand] = useState(0)
 
   let lowestBass = 255
   let highestBass = 0
@@ -58,29 +59,39 @@ function App() {
     let lastUpdate = 0;
     // const updateInterval = 6.9445; // in ms, e.g. 144fps
     const updateInterval = 16.6667; // in ms, e.g. 16.6ms = 60fps
-    let smoothedBass = 0;
 
     const bassHistory = [];
-    const maxHistory = 3;
+    const maxHistory = 2;
 
     const render = (time) => {
       if (time - lastUpdate >= updateInterval) {
-        analyser.getByteFrequencyData(dataArray)
+        analyser.getByteFrequencyData(frequencies)
         uniforms.u_time.value = time
-        uniforms.u_data_arr.value = dataArray
+        uniforms.u_data_arr.value = frequencies
 
         // mesh.rotation.z += 0.005
 
-        const bass = getBass(dataArray)
+        const melBands = getMelBands(frequencies)
+
+        // const bass = normalizeFrequencies(frequencies.slice(12, 22))
+        // const bass = getBass(frequencies)
+
+        const bass = melBands[0] / 255
+        const mid = melBands[2] / 255
+        const treble = melBands[4] / 255
+        // console.log(bass)
 
         bassHistory.push(bass);
         if (bassHistory.length > maxHistory) bassHistory.shift();
 
-        const smoothedBass = bassHistory.reduce((a, b) => a + b, 0) / bassHistory.length;
-        const smoothedRoundedBass = (smoothedBass * 100) / 100;
+        const smoothedBass = ((bassHistory.reduce((a, b) => a + b, 0) / bassHistory.length) * 100) / 100;
 
-        mesh.scale.setScalar(0.5 + smoothedRoundedBass)
+        mesh.scale.setScalar(0.5 + smoothedBass)
+        // mesh.rotation.x = -mid
+        mesh.rotation.z = treble * 0.7
+        // mesh.material.uniforms.u_midEnergy.value = smoothedBass
         lastUpdate = time;
+        // console.log(frequencies)
       }
 
       animationId = requestAnimationFrame(render)
@@ -126,14 +137,14 @@ function App() {
 
     analyser.connect(audioContext.destination)
     analyser.fftSize = 1024
-    dataArray = new Uint8Array(analyser.frequencyBinCount)
+    frequencies = new Uint8Array(analyser.frequencyBinCount)
   }
 
-  function getBass(dataArray) {
-    const bands = 5;
+  function getBass(frequencies) {
+    const bands = 3;
     let bass = 0;
     for (let i = 0; i < bands; i++) {
-      bass += dataArray[i];
+      bass += frequencies[i];
     }
 
     bass /= bands; // average energy in bass range
@@ -150,13 +161,17 @@ function App() {
     return bassNormalized
   }
 
+  function normalizeFrequencies(frequencies) {
+    return (frequencies.reduce((a, b) => a + b) / frequencies.length) / 255
+  }
+
   return (
     <div className="bg-orange-300 flex flex-grow flex-col">
-      <div className="absolute bottom-2 right-2">
+      <div className="absolute top-2 left-20">
         <audio
           id="audioPlayer"
-          src="./lofi-snippet.mp4"
-          // src="./Unknown Artist - Untitled 02.mp3"
+          // src="./lofi-snippet.mp4"
+          src="./Unknown Artist - Untitled 02.mp3"
           // src="./Orange Shirt Kid Dances To XXXTentacion.mp3"
           className="w-80"
           controls
@@ -164,10 +179,67 @@ function App() {
           onPlay={play}
           onPause={pause}
         />
+        <button
+          className="w-80 bg-white"
+          onClick={() => {
+            setBand(curr => (curr + 1) % 6)
+          }}>
+          
+            {band}
+        </button>
       </div>
       <canvas id={canvasId}></canvas>
     </div>
   )
 }
+
+function hzToMel(f) {
+  return 2595 * Math.log10(1 + f / 700);
+}
+
+function melToHz(m) {
+  return 700 * (Math.pow(10, m / 2595) - 1);
+}
+
+function getMelBands(dataArray, sampleRate = 44100, fftSize = 1024, melBands = 6) {
+  const minHz = 0;
+  const maxHz = sampleRate / 2;
+  const melMin = hzToMel(minHz);
+  const melMax = hzToMel(maxHz);
+
+  const melStep = (melMax - melMin) / melBands;
+  const freqBinSize = sampleRate / fftSize;
+
+  let bands = [];
+
+  for (let i = 0; i < melBands; i++) {
+    const melStart = melMin + i * melStep;
+    const melEnd = melStart + melStep;
+
+    const freqStart = melToHz(melStart);
+    const freqEnd = melToHz(melEnd);
+
+    const binStart = Math.floor(freqStart / freqBinSize);
+    const binEnd = Math.ceil(freqEnd / freqBinSize);
+
+    let sum = 0;
+    for (let j = binStart; j <= binEnd; j++) {
+      sum += dataArray[j] || 0;
+    }
+
+    bands.push(sum / (binEnd - binStart + 1));
+  }
+
+  return bands;
+}
+
+// Group (Octave-like)	Frequency Range (Hz)	Approx Bins (fftSize=1024)
+// Sub-bass	20–40	0–1
+// Bass	40–80	1–2
+// Low Mids	80–160	2–4
+// Mids	160–320	4–7
+// High Mids	320–640	7–15
+// Presence	640–1280	15–30
+// Brilliance	1280–5120+	30–127
 
 export default App
