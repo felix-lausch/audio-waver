@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import * as THREE from "three";
 import SceneInit from "./lib/SceneInit";
-import { vertexShader, fragmentShader } from "./lib/Shaders";
+import vertexShader from './lib/standard.vert?raw';
+import hypnoticVertexShader from './lib/hypnotic.vert?raw';
+import fragmentShader from './lib/standard.frag?raw';
+import pulsatingFragmentShader from './lib/pulsating.frag?raw';
 
 function Flying() {
   let sceneManager, audioContext, audioElement, dataArray, analyser, source;
