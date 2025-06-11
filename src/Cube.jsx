@@ -6,6 +6,7 @@ import strongVertexShader from './lib/strong.vert?raw';
 import hypnoticVertexShader from './lib/hypnotic.vert?raw';
 import fragmentShader from './lib/standard.frag?raw';
 import pulsatingFragmentShader from './lib/pulsating.frag?raw';
+import { analyze } from 'bpm-detective';
 
 function App() {
   const canvasId = "threejscanvas"
@@ -69,7 +70,7 @@ function App() {
         uniforms.u_time.value = time
         uniforms.u_data_arr.value = frequencies
 
-        // mesh.rotation.z += 0.005
+        mesh.rotation.z += 0.005
 
         const melBands = getMelBands(frequencies)
 
@@ -138,6 +139,14 @@ function App() {
     analyser.connect(audioContext.destination)
     analyser.fftSize = 1024
     frequencies = new Uint8Array(analyser.frequencyBinCount)
+
+    analyze(audioElement)
+      .then((tempo) => {
+        console.log('Estimated BPM:', tempo);
+      })
+      .catch((err) => {
+        console.error('Failed to detect BPM:', err);
+      });
   }
 
   function getBass(frequencies) {
