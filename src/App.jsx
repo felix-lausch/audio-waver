@@ -60,21 +60,13 @@ function App() {
     planeMesh4.position.x = 128
     planeMesh4.position.y = 128
 
-    planeMesh.scale.x = 2
-    planeMesh.scale.y = 2
-    planeMesh.scale.z = 2
+    const planes = [planeMesh, planeMesh2, planeMesh3, planeMesh4]
 
-    planeMesh2.scale.x = 2
-    planeMesh2.scale.y = 2
-    planeMesh2.scale.z = 2
-
-    planeMesh3.scale.x = 2
-    planeMesh3.scale.y = 2
-    planeMesh3.scale.z = 2
-
-    planeMesh4.scale.x = 2
-    planeMesh4.scale.y = 2
-    planeMesh4.scale.z = 2
+    planes.forEach(plane => {
+      plane.scale.x = 2
+      plane.scale.y = 2
+      plane.scale.z = 2
+    });
 
     test.scene.add(planeMesh)
     test.scene.add(planeMesh2)
