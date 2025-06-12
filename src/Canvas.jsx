@@ -1,6 +1,6 @@
 function App() {
   const canvasId = "threejscanvas"
-  let audioContext, audioElement, frequencies = [], analyser, source, fps = 60.0, pathBufferSize = 20;
+  let audioContext, audioElement, frequencies = [], analyser, source, fps = 60.0, pathBufferSize = 20, lineWidth = 0.2, r = 0, g = 0, b = 0;
   let animationId = null;
   let isPlaying = false;
 
@@ -41,7 +41,6 @@ function App() {
     let HEIGHT = canvas.height;
 
     canvasCtx.fillStyle = "rgb(200 100 200)";
-    canvasCtx.lineWidth = 0.2;
     let reset = 0
 
     let lastUpdate = 0;
@@ -83,11 +82,14 @@ function App() {
           color: colors[0]
         })
 
-        // canvasCtx.stroke(path);
-        paths.forEach(stroke => {
-          canvasCtx.strokeStyle = stroke.color;
-          canvasCtx.stroke(stroke.path)
-        })
+        for (let i = 0; i < paths.length; i++) {
+          const alpha = (i / (paths.length - 1));
+  
+          // Set stroke color (RGB grayscale)
+          canvasCtx.strokeStyle = `rgb(${r} ${g} ${b} / ${alpha})`;
+          canvasCtx.lineWidth = lineWidth
+          canvasCtx.stroke(paths[i].path)
+        }
   
         reset = (reset + 1) % 20
         lastUpdate = time;
@@ -195,14 +197,37 @@ function App() {
       pathBufferSize = event.target.value
       console.log("Changed path count to:" + pathBufferSize)
     })
+
+    document.getElementById('lineWidth').addEventListener('change', (event) => {
+      lineWidth = event.target.value
+      console.log("Changed line width to:" + event.target.value)
+    })
+
+    document.getElementById('color').addEventListener('change', (event) => {
+      const color = event.target.value
+      r = parseInt(color.substr(1,2), 16)
+      g = parseInt(color.substr(3,2), 16)
+      b = parseInt(color.substr(5,2), 16)
+
+      console.log()
+      console.log("Changed line color to: rgb(" + `${r} ${g} ${b})`)
+    })
   }
 
   return (
     <div className="bg-orange-300 flex flex-grow flex-col">
-      <div className="absolute top-2 left-20">
+      <div className="absolute top-2 left-20 flex flex-row-reverse gap-1">
         <div className="w-20 flex flex-col">
-          <label htmlFor="pathBufferSize">Lines</label>
+          <label htmlFor="color">Line color:</label>
+          <input type="color" id="color" ></input>
+        </div>
+        <div className="w-20 flex flex-col">
+          <label htmlFor="pathBufferSize">Line count:</label>
           <input type="range" id="pathBufferSize" min="1" max="50" defaultValue={pathBufferSize}></input>
+        </div>
+        <div className="w-20 flex flex-col">
+          <label htmlFor="lineWidth">Line width:</label>
+          <input type="number" id="lineWidth" min="0.1" max="5" step="0.1" defaultValue={lineWidth}></input>
         </div>
         <select id="fpsSelect" defaultValue={60.0}>
           <option value={144.0}>144</option>
@@ -210,6 +235,9 @@ function App() {
           <option value={30.0}>30</option>
           <option value={20.0}>20</option>
           <option value={10.0}>10</option>
+          <option value={5.0}>5</option>
+          <option value={3.0}>3</option>
+          <option value={2.0}>2</option>
           <option value={1.0}>1</option>
         </select>
         <select id="songSelect">
