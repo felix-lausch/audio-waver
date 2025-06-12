@@ -5,12 +5,14 @@ import Cube from './Cube.jsx'
 import Graph from './Graph.jsx'
 import Flying from './Flying.jsx'
 import Graph3D from './Graph3D.jsx'
+import Canvas from './Canvas.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {/* <App /> */}
-    <Cube />
+    {/* <Cube /> */}
+    <Canvas />
     {/* <Graph /> */}
     {/* <Graph3D /> */}
     {/* <Flying /> */}
