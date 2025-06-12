@@ -88,7 +88,7 @@ function App() {
 
         mesh.scale.setScalar(0.5 + smoothedBass)
         // mesh.rotation.x = -mid
-        // mesh.rotation.z = treble * 0.7
+        mesh.rotation.z = treble * 2.7
         // mesh.material.uniforms.u_midEnergy.value = smoothedBass
         lastUpdate = time;
         // console.log(frequencies)

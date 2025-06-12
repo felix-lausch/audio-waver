@@ -1,6 +1,8 @@
 function App() {
   const canvasId = "threejscanvas"
-  let audioContext, audioElement, frequencies = [], analyser, source, fps = 60.0, pathBufferSize = 20, lineWidth = 0.2, r = 0, g = 0, b = 0;
+  let audioContext, audioElement, frequencies = [], analyser, source
+  let fps = 60.0, pathBufferSize = 20, lineWidth = 0.2
+  let r = 0, g = 0, b = 0;
   let animationId = null;
   let isPlaying = false;
 
@@ -48,11 +50,14 @@ function App() {
     // const updateInterval = 16.6667; // in ms, e.g. 16.6ms = 60fps
     // const updateInterval = 60; // in ms, e.g. 16.6ms = 60fps
     const paths = []
+    const byteFrequencies = new Uint8Array(frequencies.length)
 
     const render = (time) => {
       if (time - lastUpdate >= 1000.0 / fps) {
         analyser.getByteTimeDomainData(frequencies)
+        analyser.getByteFrequencyData(byteFrequencies)
   
+        canvasCtx.fillStyle = "rgb(200 100 200)";
         canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
         while (paths.length >= pathBufferSize) {
@@ -82,6 +87,18 @@ function App() {
           color: colors[0]
         })
 
+        // const barWidth = (WIDTH / byteFrequencies.length) * 3
+  
+        // let barX = 0
+        // let barHeight = 0
+        // for (let i = 0; i < byteFrequencies.length; i++) {
+        //   barHeight = byteFrequencies[i] / 1;
+        //   canvasCtx.fillStyle = `rgb(${barHeight + 80} 50 50)`;
+        //   canvasCtx.fillRect(barX, HEIGHT - barHeight / 2, barWidth, barHeight);
+
+        //   barX += barWidth;
+        // }
+
         for (let i = 0; i < paths.length; i++) {
           const alpha = (i / (paths.length - 1));
   
@@ -90,7 +107,7 @@ function App() {
           canvasCtx.lineWidth = lineWidth
           canvasCtx.stroke(paths[i].path)
         }
-  
+
         reset = (reset + 1) % 20
         lastUpdate = time;
       }
