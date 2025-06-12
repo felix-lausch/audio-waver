@@ -88,7 +88,7 @@ function App() {
 
         mesh.scale.setScalar(0.5 + smoothedBass)
         // mesh.rotation.x = -mid
-        mesh.rotation.z = treble * 0.7
+        // mesh.rotation.z = treble * 0.7
         // mesh.material.uniforms.u_midEnergy.value = smoothedBass
         lastUpdate = time;
         // console.log(frequencies)
@@ -170,8 +170,8 @@ function App() {
       <div className="absolute top-2 left-20">
         <audio
           id="audioPlayer"
-          // src="./lofi-snippet.mp4"
-          src="./Unknown Artist - Untitled 02.mp3"
+          src="./lofi-snippet.mp4"
+          // src="./Unknown Artist - Untitled 02.mp3"
           // src="./Orange Shirt Kid Dances To XXXTentacion.mp3"
           className="w-80"
           controls
