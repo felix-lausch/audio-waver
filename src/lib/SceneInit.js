@@ -1,15 +1,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js'
 import Stats from "three/examples/jsm/libs/stats.module";
 
 export default class SceneInit {
-  constructor(canvasID, camera, scene, stats, controls, renderer, fov = 36) {
+  constructor(canvasID, camera, scene, stats, controls, renderer, gui, fov = 36) {
     this.fov = fov;
     this.scene = scene;
     this.stats = stats;
     this.camera = camera;
     this.controls = controls;
     this.renderer = renderer;
+    this.gui = gui;
     this.canvasID = canvasID;
   }
 
@@ -38,6 +40,8 @@ export default class SceneInit {
       antialias: true,
     });
 
+    this.renderer.setClearColor(0x101232)
+
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(this.renderer.domElement);
 
@@ -46,16 +50,22 @@ export default class SceneInit {
     this.stats = Stats();
     document.body.appendChild(this.stats.dom);
 
+    this.gui = new GUI();
+
     // ambient light which is for the whole scene
-    let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     ambientLight.castShadow = false;
-    this.scene.add(ambientLight);
 
     // spot light which is illuminating the chart directly
-    let spotLight = new THREE.SpotLight(0xffffff, 0.55);
-    spotLight.castShadow = true;
-    spotLight.position.set(0, 80, 10);
-    this.scene.add(spotLight);
+    // let spotLight = new THREE.SpotLight(0xffffff, 0.55);
+    // spotLight.castShadow = true;
+    // spotLight.position.set(0, 0, 10);
+    // this.scene.add(spotLight);
+
+    const dirLight = new THREE.DirectionalLight('#ffffff', 0.75)
+    dirLight.position.set(5, 5, 5)
+
+    this.scene.add(ambientLight, dirLight);
 
     // if window resizes
     window.addEventListener("resize", () => this.onWindowResize(), false);

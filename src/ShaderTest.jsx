@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import * as THREE from "three";
 import SceneInit from "./lib/SceneInit";
 import vertexShader from './lib/test.vert?raw';
-import { data } from "autoprefixer";
+import fragmentShader from './lib/test.frag?raw';
 
 export default function ShaderTest() {
   let sceneManager;
@@ -12,7 +12,7 @@ export default function ShaderTest() {
   useEffect(() => {
     sceneManager = new SceneInit("threejscanvas");
     sceneManager.initScene();
-    sceneManager.camera.position.z = 200
+    sceneManager.camera.position.z = 7
     sceneManager.animate();
   }, []);
 
@@ -30,7 +30,7 @@ export default function ShaderTest() {
 
     if (isPlaying === true) return; // Prevent multiple render loops
     isPlaying = true;
-    const fps = 20.0
+    const fps = 60.0
     let lastUpdate = 0
 
     const render = (time) => {
@@ -38,10 +38,9 @@ export default function ShaderTest() {
         analyser.getByteTimeDomainData(dataArray);
         // analyser.getByteFrequencyData(dataArray);
 
-        // console.log(dataArray[10] / 255)
+        // mesh.rotation.x += 0.01
 
-        updateShaders(time);
-        lastUpdate = time
+        lastUpdate = updateShaders(time);
       }
 
       animationId = requestAnimationFrame(render);
@@ -77,33 +76,33 @@ export default function ShaderTest() {
   );
 
   function updateShaders(time) {
+    // console.log((time % 10.0) / 10.0)
     uniforms.u_time.value = time;
     uniforms.u_data_arr.value = dataArray;
+
+    return time
   }
 
   function setupMesh() {
     uniforms = {
       u_time: { value: 1.0 },
+      u_radius: { value: 0.2 },
       u_amplitude: { value: 2.0 },
       u_data_arr: { value: dataArray },
     };
 
-    const geometry = new THREE.PlaneGeometry(128, 128, 128, 128);
+    // const geometry = new THREE.PlaneGeometry(2, 2, 10, 10);
+    const geometry = new THREE.PlaneGeometry(2, 2);
     const material = new THREE.ShaderMaterial({
-      uniforms: uniforms, //dataArray, time
-      color: "orange",
-      side: THREE.DoubleSide,
-      vertexShader: vertexShader, //clash with color?
-      // fragmentShader: pulsatingFragmentShader,
-      wireframe: true,
-    });
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      uniforms: uniforms,
+      // wireframe: true
+    })
 
-    const mesh = new THREE.Mesh(geometry, material);
-    // mesh.position.x = 0;
-    // mesh.position.y = 0;
-    // mesh.position.z = 0;
-
+    mesh = new THREE.Mesh(geometry, material);
     sceneManager.scene.add(mesh);
+    sceneManager.gui.add(material.uniforms.u_radius, "value").min(0).max(1);
   }
 
   function setupAudioContext() {

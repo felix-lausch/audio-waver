@@ -1,22 +1,35 @@
-varying vec3 vUv;
+// uniform float u_amplitude;
+// uniform float[64] u_data_arr;
+
+//attribute are geometry properties in three js and get automatically populated in glsl
+//each attribute is vertex specific
+// attribute vec3 position;
+
+//uniforms are material properties, they are the same for every vertex
+//and are also available in the fragment shader
+// uniform mat4 projectionMatrix;
+// uniform mat4 modelViewMatrix;
+// uniform mat4 modelMatrix;
+// uniform mat4 viewMatrix;
+
+// Transform -> position, scale, rotation
+// modelMatrix -> position, scale, rotation of our model
+// viewMatrix -> position, orientation of our camera
+// projectionMatrix -> projects our object onto the screen (aspect ratio & the perspective)
 
 uniform float u_time;
-uniform float u_amplitude;
-uniform float[64] u_data_arr;
+
+varying vec3 vPosition;
+varying vec3 vNormal;
+varying vec2 vUv;
 
 void main() {
-  vUv = position;
+  vPosition = position;
+  vNormal = normal;
+  vUv = uv;
 
-  //From -64 to +64 → normalize to 0–63
-  float norm_x = (position.x + 64.0) / 128.0 * 63.0;
-  int index = int(clamp(norm_x, 0.0, 63.0));
+  vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
 
-  float dist = length(vec2(position.x, position.y)); // radial distance from center
-  float falloff = 1.0 - dist / 90.0; // adjust radius as needed
-  falloff = clamp(falloff, 0.0, 1.0);
-
-  float height = u_data_arr[index] / 127.0; // Normalize
-  float z = height * u_amplitude * falloff * 5.0;
-
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
+  //MVP
+  gl_Position = projectionMatrix * modelViewPosition;
 }
