@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import * as THREE from "three";
 import SceneInit from "./lib/SceneInit";
 import vertexShader from './lib/test.vert?raw';
-import fragmentShader from './lib/test.frag?raw';
+import fragmentShader from './lib/organic.frag?raw';
+import texture from './lib/texture.jpg'
 
 export default function ShaderTest() {
   let sceneManager;
@@ -38,7 +39,9 @@ export default function ShaderTest() {
         analyser.getByteTimeDomainData(dataArray);
         // analyser.getByteFrequencyData(dataArray);
 
-        // mesh.rotation.x += 0.01
+        mesh.rotation.x += 0.001
+        // const bass = getBass(dataArray) / 4;
+        // mesh.scale.set(1, 1 - bass, 1);
 
         lastUpdate = updateShaders(time);
       }
@@ -85,14 +88,15 @@ export default function ShaderTest() {
 
   function setupMesh() {
     uniforms = {
-      u_time: { value: 1.0 },
-      u_radius: { value: 0.2 },
+      u_time: { value: 0.0 },
+      u_radius: { value: 5.0 },
       u_amplitude: { value: 2.0 },
       u_data_arr: { value: dataArray },
+      u_texture: { value: new THREE.TextureLoader().load(texture) },
     };
 
     // const geometry = new THREE.PlaneGeometry(2, 2, 10, 10);
-    const geometry = new THREE.PlaneGeometry(2, 2);
+    const geometry = new THREE.IcosahedronGeometry(1, 100);
     const material = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -102,7 +106,7 @@ export default function ShaderTest() {
 
     mesh = new THREE.Mesh(geometry, material);
     sceneManager.scene.add(mesh);
-    sceneManager.gui.add(material.uniforms.u_radius, "value").min(0).max(1);
+    sceneManager.gui.add(material.uniforms.u_radius, "value").min(1).max(5);
   }
 
   function setupAudioContext() {
@@ -118,5 +122,18 @@ export default function ShaderTest() {
     
     console.debug("Bufferlength: " + bufferLength)
     console.debug("AudioContext initialized")
+  }
+
+    function getBass(frequencies) {
+    const bands = 5;
+    let bass = 0;
+    for (let i = 0; i < bands; i++) {
+      bass += frequencies[i];
+    }
+
+    bass /= bands; // average energy in bass range
+    const bassNormalized = bass / 255; // round to two digits
+
+    return bassNormalized
   }
 }

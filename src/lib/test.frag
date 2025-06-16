@@ -1,5 +1,6 @@
 precision mediump float;
 
+uniform sampler2D u_texture;
 uniform float u_time;
 uniform float u_radius;
 
@@ -14,7 +15,6 @@ float makeLine(float val) {
 float makeCircle(vec2 uv) {
   return step(u_radius, length(uv - 0.5));
 }
-
 
 float drawCircle(vec2 position, vec2 center) {
   return step(u_radius, distance(position, center));
@@ -125,12 +125,18 @@ void main() {
   // float y = makeLine(vUv.y);
   // float x = makeLine(vUv.x);
 
-  const vec2 center = vec2(0.5);
+  // float circle = drawCircle(vUv, center);
+  // float box = 1.0 - sdBox(vUv - 0.5, vec2(0.15));
+  
+  // const vec2 center = vec2(0.5);
 
-  float circle = drawCircle(vUv, center);
-  float box = 1.0 - sdBox(vUv - 0.5, vec2(0.15));
+  // vec3 timePos = vPosition + (u_time * 0.00005);
 
-  vec3 timePos = vPosition + (u_time * 0.00005);
+  // const vec3 DESATURATE = vec3(0.2126, 0.7152, 0.0722);
 
-  gl_FragColor = vec4(vec3(noise(timePos * 5.0)), 1);
+  // vec3 color = texture2D(u_texture, vUv).xyz;
+  // float finalColor = dot(DESATURATE, color);
+
+  // gl_FragColor = vec4(vec3(noise(timePos * 15.0)), 1);
+  gl_FragColor = vec4(vec3(finalColor), 1);
 }
