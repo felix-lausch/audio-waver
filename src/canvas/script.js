@@ -14,7 +14,7 @@ window.addEventListener("load", function () {
   //fractal variables
   let size = canvas.width < canvas.height ? canvas.width * 0.3 : canvas.height * 0.3;
   const maxLevel = 4;
-  const branches = 3;
+  const branches = 2;
   let sides = 5;
   let scale = 0.7;
   let spread = 0.9;
