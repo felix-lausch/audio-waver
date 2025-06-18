@@ -4,7 +4,6 @@ window.addEventListener("load", function () {
   canvas.width = this.window.innerWidth;
   canvas.height = this.window.innerHeight;
 
-  ctx.fillStyle = "green";
   ctx.lineWidth = 20;
   ctx.lineCap = "round";
   ctx.shadowColor = 'rgba(0,0,0,0.9)';
@@ -14,10 +13,10 @@ window.addEventListener("load", function () {
 
   //fractal variables
   let size = canvas.width < canvas.height ? canvas.width * 0.3 : canvas.height * 0.3;
-  const maxLevel = 3;
-  const branches = 2;
+  const maxLevel = 4;
+  const branches = 3;
   let sides = 5;
-  let scale = 0.5;
+  let scale = 0.7;
   let spread = 0.9;
   let color = 'hsl(' + Math.random() * 360 + ', 100%, 50%)';
 
@@ -42,25 +41,25 @@ window.addEventListener("load", function () {
     for (let i = 0; i < branches; i++) {
       ctx.save();
       ctx.translate(size - (size/branches) * i, 0);
-      ctx.rotate(spread);
       ctx.scale(scale , scale);
-      drawBranch(level + 1);
-      ctx.restore();
 
       ctx.save();
-      ctx.translate(size - (size/branches) * i, 0);
-      ctx.rotate(-spread);
-      ctx.scale(scale , scale);
+      ctx.rotate(spread);
       drawBranch(level + 1);
       ctx.restore();
+      ctx.restore();
     }
-  }
 
+    ctx.beginPath()
+    ctx.arc(0,size, size * 0.1, 0, Math.PI * 2)
+    ctx.fill()
+  }
 
   function drawFractal() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.strokeStyle = color;
+    ctx.fillStyle = color;
 
     ctx.translate(canvas.width/2, canvas.height/2);
 
@@ -97,9 +96,9 @@ window.addEventListener("load", function () {
   })
 
   function randomizeFractal() {
-    sides = Math.floor(Math.random() * 7 + 2);
-    scale = Math.random() * 0.2 + 0.4;
-    spread = Math.random() * 2.9 + 0.1;
+    sides = Math.floor(Math.random() * 13 + 2);
+    scale = Math.random() * 0.4 + 0.4;
+    spread = Math.random() * 6.2 - 3.1;
     color = 'hsl(' + Math.random() * 360 + ', 100%, 50%)';
     updateSliders()
   }
@@ -121,10 +120,10 @@ window.addEventListener("load", function () {
   }
 
   window.addEventListener("resize", () => {
-    // canvas.width = window.innerWidth;
-    // canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     // size = window.innerWidth < window.innerHeight ? window.innerWidth * 0.3 : window.innerHeight * 0.3;
-    // drawFractal()
+    drawFractal()
   })
 });
 
