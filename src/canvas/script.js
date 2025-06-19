@@ -30,6 +30,9 @@ window.addEventListener("load", function () {
   const spreadSlider = this.document.getElementById("spread");
   const spreadLabel = this.document.querySelector('[htmlFor="spread"]');
 
+
+  //TODO: create different draw branch mehtods and also choose randomly between them
+
   function drawBranch(level) {
     if (level > maxLevel) return
 
