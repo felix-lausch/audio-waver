@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import * as THREE from "three";
 import SceneInit from "./lib/SceneInit";
-import vertexShader from './lib/standard.vert?raw';
-import hypnoticVertexShader from './lib/hypnotic.vert?raw';
-import fragmentShader from './lib/standard.frag?raw';
-import pulsatingFragmentShader from './lib/pulsating.frag?raw';
+import {AudioAnalyzer} from "./lib/AudioAnalyser";
 
 function Flying() {
-  let sceneManager, audioContext, audioElement, dataArray, dataArrays, analyser, source;
-  const bufferLength = 64;
+  let sceneManager, audioContext, audioElement, dataArray, dataArrays, analyser, audioAnalyzer, source, u_time = 1.0, mesh;
+  const bufferLength = 300;
+  const rows = 8;
 
   useEffect(() => {
     sceneManager = new SceneInit("threejscanvas");
@@ -20,41 +18,52 @@ function Flying() {
     sceneManager.animate();
   }, []);
 
+  let animationId = null;
+  let isPlaying = false;
+
   function play() {
     if (!audioContext) {
       setupAudioContext();
     }
+
+    if (!mesh) {
+      setupMesh()
+    }
+
+    if (isPlaying) return
+    isPlaying = true
     
-    const uniforms = {
-      u_time: {
-        type: "f",
-        value: 1.0,
-      },
-      u_data_arr_size: {
-        type: "f",
-        value: 16,
-      },
-      u_data_arr: {
-        type: "float[16]",
-        value: dataArrays[0],
-      },
+    const fps = 60.0;
+    let lastUpdate = 0;
+
+    const render = (time) => {
+      if (time - lastUpdate >= 1000.0 / fps) {
+        
+        // analyser.getByteFrequencyData(dataArray)
+        dataArray = audioAnalyzer.getLogFrequencies();
+
+        for (let i = 0; i < dataArrays.length; i++) {
+          addToFront(dataArrays[i], dataArray[i], bufferLength)
+        }
+        u_time = time;
+        lastUpdate = time;
+      }
+
+      animationId = requestAnimationFrame(render);
     };
 
-    const uniforms2 = {
-      u_time: {
-        type: "f",
-        value: 1.0,
-      },
-      u_data_arr_size: {
-        type: "f",
-        value: 16,
-      },
-      u_data_arr: {
-        type: "float[16]",
-        value: dataArrays[1],
-      },
-    };
+    render();
+  }
 
+  function pause() {
+    if (animationId !== null) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+      isPlaying = false;
+    }
+  }
+
+  function setupMesh() {
     const vertextShader = `
       varying float x;
       varying float y;
@@ -62,20 +71,17 @@ function Flying() {
       varying vec3 vUv;
       
       uniform float u_time;
-      uniform float[16] u_data_arr;
+      uniform float[${bufferLength}] u_data_arr;
       uniform float u_data_arr_size;
       
       void main() {
         vUv = position;
 
-        x = position.x + 8.0;
+        x = position.x + (u_data_arr_size / 2.0);
 
-        float amplitude_at_x = u_data_arr[int(x)];
+        z = (u_data_arr[int(x)] / 255.0);
 
-        float fact = step(2., mod(x,5.0));
-        float z = amplitude_at_x;
-
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x, position.y, z * 100.0, 1.0);
       }
     `;
 
@@ -86,65 +92,48 @@ function Flying() {
       varying vec3 vUv;
   
       uniform float u_time;
+      uniform float u_data_arr_size;
   
       void main() {
-        gl_FragColor = vec4((32.0 - abs(x)) / 32.0, (32.0 - abs(y)) / 32.0, (abs(x + y) / 2.0) / 32.0, 1.0);
-        gl_FragColor = vec4(vec3(1.0, 0.1, 0.1), 1.0);
+        float b = 1.0 - (x / u_data_arr_size) + 0.1;
+        gl_FragColor = vec4(b, z, 1.0 - z, 1.0);
       }
     `
 
-    const planeGeo = new THREE.PlaneGeometry(15, 0.5, 15, 1);
-    const planeMat = new THREE.ShaderMaterial({
-      uniforms: uniforms, //dataArray, time
-      vertexShader: vertextShader,
-      fragmentShader: fragmentShader,
-      wireframe: true,
-    });
+    const planeGeo = new THREE.PlaneGeometry(bufferLength - 1, 0.5, bufferLength, 10);
 
-    const planeMat2 = new THREE.ShaderMaterial({
-      uniforms: uniforms2, //dataArray, time
-      vertexShader: vertextShader,
-      fragmentShader: fragmentShader,
-      wireframe: true,
-    });
-    const planeMesh = new THREE.Mesh(planeGeo, planeMat);
-    const planeMesh2 = new THREE.Mesh(planeGeo, planeMat2);
+    for (let i = 0; i < rows; i++) {
+      const uniforms = {
+        u_time: {
+          type: "f",
+          value: u_time,
+        },
+        u_data_arr_size: {
+          type: "f",
+          value: bufferLength,
+        },
+        u_data_arr: {
+          type: `float[${bufferLength}]`,
+          value: dataArrays[i],
+        },
+      };
 
-    // planeMesh.rotation.x = -Math.PI / 2 + Math.PI / 4
-    planeMesh.rotation.x = Math.PI / -2;
-    planeMesh.scale.x = 6;
-    planeMesh.scale.y = 6;
-    planeMesh.scale.z = 6;
-    planeMesh.position.y = -4;
+      const planeMat = new THREE.ShaderMaterial({
+        uniforms: uniforms, //dataArray, time
+        vertexShader: vertextShader,
+        fragmentShader: fragmentShader,
+        wireframe: true,
+      });
 
-    planeMesh2.position.z += 8;
-    planeMesh2.rotation.x = Math.PI / -2;
-    planeMesh2.scale.x = 6;
-    planeMesh2.scale.y = 6;
-    planeMesh2.scale.z = 6;
-    planeMesh2.position.y = -4;
+      const planeMesh = new THREE.Mesh(planeGeo, planeMat);
 
-    sceneManager.scene.add(planeMesh);
-    sceneManager.scene.add(planeMesh2);
+      planeMesh.position.z += (i * 14);
+      planeMesh.rotation.x = Math.PI / -2;
+      planeMesh.position.y = -40;
 
-    const fps = 10.0;
-    let lastUpdate = 0;
-
-    const render = (time) => {
-      if (time - lastUpdate >= 1000.0 / fps) {
-        
-        analyser.getFloatFrequencyData(dataArray)
-        
-        for (let i = 0; i < dataArrays.length; i++) {
-          addToFront(dataArrays[i], dataArray[i], 16)
-        }
-        lastUpdate = time;
-      }
-
-      requestAnimationFrame(render);
-    };
-
-    render();
+      sceneManager.scene.add(planeMesh);
+      mesh = true;
+    }
   }
 
   return (
@@ -158,7 +147,8 @@ function Flying() {
           className="w-80"
           controls
           onPlay={play}
-          autoPlay
+          onPause={pause}
+          autoPlay={true}
         />
       </div>
       <canvas id="threejscanvas"></canvas>
@@ -173,14 +163,17 @@ function Flying() {
     source.connect(analyser)
     analyser.connect(audioContext.destination)
     analyser.fftSize = 256
-    dataArray = new Float32Array(analyser.frequencyBinCount)
-    const rows = 16;
-    const cols = 2;
-    
+
+    audioAnalyzer = new AudioAnalyzer(analyser, {
+      outputBins: rows,
+      scale: "byte"
+    });
+
+    dataArray = new Uint8Array(analyser.frequencyBinCount)
     dataArrays = [];
-    for (let i = 0; i < rows; i++) {
+    for (let i = 0; i < bufferLength; i++) {
       dataArrays[i] = [];
-      for (let j = 0; j < cols; j++) {
+      for (let j = 0; j < rows; j++) {
         dataArrays[i][j] = 0; // or any default value
       }
     }
@@ -191,9 +184,11 @@ function Flying() {
 
   function addToFront(array, value, maxLength) {
     array.unshift(value);
+
     if (array.length > maxLength) {
       array.pop();
     }
+
     return array;
   }
 }
