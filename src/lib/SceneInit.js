@@ -20,7 +20,7 @@ export default class SceneInit {
       this.fov,
       window.innerWidth / window.innerHeight,
       1,
-      1000
+      5000
     );
 
     this.clock = new THREE.Clock();

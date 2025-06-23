@@ -43,8 +43,8 @@ function App() {
     const planeGeo = new THREE.PlaneGeometry(64, 64, 64, 64)
     const planeMat = new THREE.ShaderMaterial({
       uniforms: uniforms, //dataArray, time
-      vertexShader: strongVertexShader,
-      fragmentShader: pulsatingFragmentShader,
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
       wireframe: true,
     })
 
@@ -89,9 +89,8 @@ function App() {
       <div className="absolute bottom-2 right-2">
         <audio
           id="audioPlayer"
-          // src="./Unknown Artist - Untitled 02.mp3"
-          src="./lofi-snippet.mp4"
-          // src="./Orange Shirt Kid Dances To XXXTentacion.mp3"
+          src="./dnb-snippet.mp4"
+          // src="./lofi-snippet.mp4"
           className="w-80"
           controls
           autoPlay

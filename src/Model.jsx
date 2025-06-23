@@ -23,7 +23,7 @@ export default function Graph() {
 
     modelLoadedRef.current = true;
 
-    loader.load('/models/model.glb', (model) => {
+    loader.load('/models/fox.glb', (model) => {
       sceneManager.scene.add(model.scene);
       animations = model.animations;
       mixer = new THREE.AnimationMixer(model.scene);
